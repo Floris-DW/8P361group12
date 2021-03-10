@@ -19,10 +19,10 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import model_from_json
 
 #%% define paths
-path_images = '../../Images/' # navigate to ~/cource/Images from ~/cource/Github/autoencoder.py
+path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
 path_models = './models/'
 
-model_path = path_models + r'09-03-2021_15-35-37_model_autoencoder_Ldim-2'
+#model_path = path_models + r'09-03-2021_15-35-37_model_autoencoder_Ldim-2'
 
 use_latest_model = True
 if use_latest_model:
@@ -89,3 +89,18 @@ for i in range(n):
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 plt.show()
+
+#%% Registration error
+
+real_img = images[0] - np.mean(images[0])
+recreated_img = decoded_imgs[0] - np.mean(decoded_imgs[0])
+
+u = real_img.reshape((real_img.shape[0]*real_img.shape[1],3))
+v = recreated_img.reshape((recreated_img.shape[0]*recreated_img.shape[1],3))
+
+u = u - u.mean(keepdims=True)
+v = v - v.mean(keepdims=True)
+    
+CC=(np.transpose(u).dot(v))/(((np.transpose(u).dot(u))**0.5)*((np.transpose(v).dot(v))**0.5))
+
+print(np.mean(CC))

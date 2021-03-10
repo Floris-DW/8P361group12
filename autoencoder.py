@@ -11,14 +11,14 @@ import tensorflow as tf
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import Dense, Flatten, Reshape
+from tensorflow.keras.layers import Dense, Flatten, Reshape, Conv2D, MaxPool2D, UpSampling2D, Input
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 import time
 #%% Preparations
 date = time.strftime("%d-%m-%Y_%H-%M-%S")
-path_images = '../../Images/' # navigate to ~/cource/Images from ~/cource/Github/autoencoder.py
+path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
 path_models = './models/'
 
 # the size of the images in the PCAM dataset
@@ -49,29 +49,39 @@ def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32, classe
 
 #%% define the model
 # This is the dimension of the latent space (encoding space)
-latent_dim = 2
+filters = [64, 32, 16]
+kernel_size=(3,3)
+pool_size=(2,2)
+latent_dim = filters[-1]
 
-encoder = Sequential([
-    Flatten(input_shape=image_shape),
-    Dense(192, activation='sigmoid'),
-    #Dense(64, activation='sigmoid'),
-    #Dense(32, activation='sigmoid'),
-    Dense(latent_dim, name='encoder_output')
-])
+# encoder
+input_layer = Input(shape=image_shape)
+encoded_layer1 = Conv2D(filters[0], kernel_size, activation = 'relu', padding = 'same')(input_layer)
+encoded_layer1 = MaxPool2D(pool_size = pool_size, padding = 'same')(encoded_layer1)
+encoded_layer2 = Conv2D(filters[1], kernel_size, activation = 'relu', padding = 'same')(encoded_layer1)
+encoded_layer2 = MaxPool2D(pool_size = pool_size, padding = 'same')(encoded_layer2)
+encoded_layer3 = Conv2D(filters[2], kernel_size, activation = 'relu', padding = 'same')(encoded_layer2)
+latent_view = MaxPool2D(pool_size = pool_size, padding = 'same')(encoded_layer3)
 
-decoder = Sequential([
-    #Dense(64, activation='sigmoid', input_shape=(latent_dim,)),
-    #Dense(128, activation='sigmoid'),
-    Dense(image_shape[0] * image_shape[1]* image_shape[2], activation='relu'),
-    Reshape(image_shape)
-])
+# decoder
+decoded_layer1 = Conv2D(filters[2], kernel_size, activation = 'relu', padding = 'same')(latent_view)
+decoded_layer1 = UpSampling2D(pool_size)(decoded_layer1)
+decoded_layer2 = Conv2D(filters[1], kernel_size, activation = 'relu', padding = 'same')(decoded_layer1)
+decoded_layer2 = UpSampling2D(pool_size)(decoded_layer2)
+decoded_layer3 = Conv2D(filters[0], kernel_size, activation = 'relu', padding = 'same')(decoded_layer2)
+decoded_layer3 = UpSampling2D(pool_size)(decoded_layer3)
+output_layer = Conv2D(image_shape[2], kernel_size, activation = 'relu', padding = 'same')(decoded_layer3)
 
-autoencoder = Model(inputs=encoder.input, outputs=decoder(encoder.output))
-autoencoder.compile(loss='binary_crossentropy', optimizer='adam')
+# compile model
+autoencoder = Model(input_layer, output_layer)
+autoencoder.compile(loss='MeanSquaredError', optimizer='adam')
+autoencoder.summary()
 
 #%% saving model
 # save the model and weights
-model_name = path_models + f'{date}_model_autoencoder_Ldim-{latent_dim}'
+num_epochs = 1
+
+model_name = path_models + f'{date}_model_autoencoder_Ldim-{latent_dim}_epochs-{num_epochs}'
 
 # save model
 model_json = autoencoder.to_json() # serialize model to JSON
@@ -84,6 +94,6 @@ checkpoint = ModelCheckpoint(model_name+'_w.hdf5', monitor='val_loss', verbose=1
 #%% train model
 train_gen, val_gen = get_pcam_generators(path_images)
 
-model_history = autoencoder.fit(train_gen, epochs=1, batch_size=32, verbose=1,
+model_history = autoencoder.fit(train_gen, epochs=3, batch_size=32, verbose=1,
                                 validation_data=val_gen,
                                 callbacks=checkpoint)
