@@ -94,6 +94,6 @@ checkpoint = ModelCheckpoint(model_name+'_w.hdf5', monitor='val_loss', verbose=1
 #%% train model
 train_gen, val_gen = get_pcam_generators(path_images)
 
-model_history = autoencoder.fit(train_gen, epochs=3, batch_size=32, verbose=1,
+model_history = autoencoder.fit(train_gen, epochs=4, batch_size=32, verbose=1,
                                 validation_data=val_gen,
                                 callbacks=checkpoint)
