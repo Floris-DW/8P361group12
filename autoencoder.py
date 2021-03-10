@@ -79,7 +79,7 @@ autoencoder.summary()
 
 #%% saving model
 # save the model and weights
-num_epochs = 1
+num_epochs = 4
 
 model_name = path_models + f'{date}_model_autoencoder_Ldim-{latent_dim}_epochs-{num_epochs}'
 
@@ -94,6 +94,6 @@ checkpoint = ModelCheckpoint(model_name+'_w.hdf5', monitor='val_loss', verbose=1
 #%% train model
 train_gen, val_gen = get_pcam_generators(path_images)
 
-model_history = autoencoder.fit(train_gen, epochs=4, batch_size=32, verbose=1,
+model_history = autoencoder.fit(train_gen, epochs=num_epochs, batch_size=32, verbose=1,
                                 validation_data=val_gen,
                                 callbacks=checkpoint)
