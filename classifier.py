@@ -74,7 +74,7 @@ decoded_imgs =  np.clip(model.predict(images),0,1)
 decoded_imgs =  np.clip(decoded_imgs, 0, 1)
 
 plt.figure(figsize=(20, 4))
-for i in range(n):
+for i in range(1):
     # display original
     ax = plt.subplot(2, n, i + 1)
     plt.imshow(images[i])
