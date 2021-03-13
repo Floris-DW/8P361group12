@@ -69,10 +69,8 @@ n = 10
 
 _, image_test = get_pcam_generators(path_images, train_batch_size=n, classes=['0'], class_mode=None)
 images = image_test.next()
-images = np.clip(images, 0, 1)
 
-decoded_imgs =  np.clip(model.predict(images),0,1)
-decoded_imgs =  np.clip(decoded_imgs, 0, 1)
+decoded_imgs =  model.predict(images)
 
 plt.figure(figsize=(20, 4))
 for i in range(n):
