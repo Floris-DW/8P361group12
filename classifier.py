@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import model_from_json
 
 #%% define paths
@@ -40,8 +39,10 @@ def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32, classe
      train_path = os.path.join(base_dir, 'train+val', 'train')
      valid_path = os.path.join(base_dir, 'train+val', 'valid')
 
+     RESCALING_FACTOR = 1./255
+
      # instantiate data generators
-     datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
+     datagen = ImageDataGenerator(rescale=RESCALING_FACTOR)
 
      train_gen = datagen.flow_from_directory(train_path,
                                              target_size=(IMAGE_SIZE, IMAGE_SIZE),
@@ -100,7 +101,7 @@ v = recreated_img.reshape((recreated_img.shape[0]*recreated_img.shape[1],3))
 
 u = u - u.mean(keepdims=True)
 v = v - v.mean(keepdims=True)
-    
+
 CC=(np.transpose(u).dot(v))/(((np.transpose(u).dot(u))**0.5)*((np.transpose(v).dot(v))**0.5))
 
 print(np.mean(CC))

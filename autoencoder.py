@@ -13,7 +13,6 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Dense, Flatten, Reshape, Conv2D, MaxPool2D, UpSampling2D, Input
 from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 import time
 #%% Preparations
@@ -30,8 +29,10 @@ def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32, classe
      train_path = os.path.join(base_dir, 'train+val', 'train')
      valid_path = os.path.join(base_dir, 'train+val', 'valid')
 
+     RESCALING_FACTOR = 1./255
+
      # instantiate data generators
-     datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
+     datagen = ImageDataGenerator(rescale=RESCALING_FACTOR)
 
      train_gen = datagen.flow_from_directory(train_path,
                                              target_size=(IMAGE_SIZE, IMAGE_SIZE),
