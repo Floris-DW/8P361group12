@@ -146,7 +146,7 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    if True:
+    if False:
         model = AutoEncoder()
         num_epochs = 10
         train_gen, val_gen = ImageGeneratorsTrain(path_images)
