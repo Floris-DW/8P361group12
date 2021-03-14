@@ -62,7 +62,7 @@ def TrainModel(model, train, validation, num_epochs, batch_size=32,
 
         # prepare to save wheights
         date = time.strftime("%d-%m-%Y_%H-%M-%S")
-        callbacks = ModelCheckpoint(save_dir + model.name+f'_W_D{date}.hdf5', monitor='val_loss', verbose=verbose, save_best_only=True, mode='min')
+        callbacks = ModelCheckpoint(save_dir + model.name+f'_W_E{num_epochs}_D{date}.hdf5', monitor='val_loss', verbose=verbose, save_best_only=True, mode='min')
     else:
         callbacks=None
 
@@ -96,72 +96,73 @@ def LoadModel(name='', path_models='./models/'):
         loaded_model_json = json_file.read()
     model = model_from_json(loaded_model_json)
     model.load_weights(weight_path)
-
     return model
 
-def ImageGenerators(base_dir, train_batch_size=32, val_batch_size=32, IMAGE_SIZE=96, validation_split=0.3):
+
+def ImageGeneratorsTrain(base_dir, train_batch_size=32, val_batch_size=32, IMAGE_SIZE=96, split=0.3):
      """
-     create four genarators:
-     train, validation, test_healthy, test_diseased
-
+     create twe genarators:
+     train and validation.
      the train and validaion set are build from the split training set.
-     the test sets are the original validaion set.
-
      """
      # dataset parameters
      train_path = base_dir + 'train+val/train'
+
+     RESCALING_FACTOR = 1./255
+
+     # we split the training set into training and validation.
+     datagen_train = ImageDataGenerator(rescale=RESCALING_FACTOR, validation_split=split)
+
+     # using the method from here might be better:
+     # https://towardsdatascience.com/addressing-the-difference-between-keras-validation-split-and-sklearn-s-train-test-split-a3fb803b733
+
+     train_gen = datagen_train.flow_from_directory(train_path, batch_size=train_batch_size, target_size=(IMAGE_SIZE, IMAGE_SIZE),
+                                             subset='training',   classes='0', class_mode='input')
+
+     val_gen = datagen_train.flow_from_directory(train_path, batch_size=val_batch_size, target_size=(IMAGE_SIZE, IMAGE_SIZE),
+                                             subset='validation', classes='0', class_mode='input')
+     return train_gen, val_gen
+
+
+def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
+     """
+     create two genarators:
+     test_healthy, test_diseased
+     the test sets are the original validaion set.
+     """
+     # dataset parameters
      valid_path = base_dir + 'train+val/valid'
 
      RESCALING_FACTOR = 1./255
 
-     # we split the training set into training and validation. The test set is made from the validaion set
-     datagen_train = ImageDataGenerator(rescale=RESCALING_FACTOR, validation_split=validation_split)
+     #The test set is made from the validaion set
      datagen_test = ImageDataGenerator(rescale=RESCALING_FACTOR)
 
-    # using the method from here might be better:
-    # https://towardsdatascience.com/addressing-the-difference-between-keras-validation-split-and-sklearn-s-train-test-split-a3fb803b733
-
-     train_gen = datagen_train.flow_from_directory(train_path,
-                                             target_size=(IMAGE_SIZE, IMAGE_SIZE),
-                                             batch_size=train_batch_size,
-                                             subset='training',
-                                             classes='0',
-                                             class_mode='input')
-
-     val_gen = datagen_train.flow_from_directory(train_path,
-                                             target_size=(IMAGE_SIZE, IMAGE_SIZE),
-                                             batch_size=val_batch_size,
-                                             classes='0',
-                                             subset='validation',
-                                             class_mode='input')
-
      # the test generators
-     test_gen_H = datagen_test.flow_from_directory(valid_path,
-                                             target_size=(IMAGE_SIZE, IMAGE_SIZE),
-                                             batch_size=val_batch_size,
-                                             classes='0',
-                                             class_mode=None)
+     test_gen_H = datagen_test.flow_from_directory(valid_path, batch_size=batch_size, target_size=(IMAGE_SIZE, IMAGE_SIZE),
+                                             classes='0', class_mode=None)
 
-     test_gen_D = datagen_test.flow_from_directory(valid_path,
-                                             target_size=(IMAGE_SIZE, IMAGE_SIZE),
-                                             batch_size=val_batch_size,
-                                             classes='1',
-                                             class_mode=None)
+     test_gen_D = datagen_test.flow_from_directory(valid_path, batch_size=batch_size, target_size=(IMAGE_SIZE, IMAGE_SIZE),
+                                             classes='1', class_mode=None)
 
-     return train_gen, val_gen, test_gen_H, test_gen_D
+     return test_gen_H, test_gen_D
 
 
-if __name__ == '__main__' and False:
+if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    train_gen, val_gen, test_gen_H, test_gen_D = ImageGenerators(path_images)
+
     if False:
         model = AutoEncoder()
         num_epochs = 1
+        train_gen, val_gen = ImageGeneratorsTrain(path_images)
         history = TrainModel(model, train_gen, val_gen, num_epochs)
     else:
         model = LoadModel()
-    #model.summary()
-    #%% visualize:
+    model.summary()
+
+    # visualize:
+    test_gen_H, test_gen_D = ImageGeneratorsTest(path_images)
+
     n = 10
 
     images = test_gen_H.next()
