@@ -24,11 +24,6 @@ import time
 path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
 path_models = './models/'
 
-# the size of the images in the PCAM dataset
-IMAGE_SIZE = 96
-image_shape = (IMAGE_SIZE, IMAGE_SIZE, 3)
-
-
 def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2),
                 activation='relu',padding='same', model_name=None):
     #encoder
@@ -151,9 +146,9 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    if False:
+    if True:
         model = AutoEncoder()
-        num_epochs = 1
+        num_epochs = 10
         train_gen, val_gen = ImageGeneratorsTrain(path_images)
         history = TrainModel(model, train_gen, val_gen, num_epochs)
     else:
@@ -185,4 +180,3 @@ if __name__ == '__main__':
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
     plt.show()
-
