@@ -73,42 +73,23 @@ def TrainModel(model, train, validation, num_epochs, batch_size=32,
     return model_history
 
 
-def LoadModel(name=None, path_models='./models/'):
+def LoadModel(name='', path_models='./models/'):
     """
     load diffrent types of models.
     name: name of the model.
-        - if None, selects the newest model
-        - if no weights are given, picks latest available.
-    (please use the weights.hdf5 to refer to the model)
+        - if '', selects the newest model
+        - if no weights are given, picks latest available for the given name.
 
-    currently supports:
-        - old models trained pre-namechange
-        - AE_v1_* : models of the new name sceme
+    **please use the weights (.hdf5) to refer to the model**
     """
-    if name == None:
-        files = [path_models + x for x in os.listdir(path_models) if x.endswith(".hdf5")]
-        name = max(files , key = os.path.getctime).replace(path_models,"")  # cut off the path_models, to remain with a name
+    # if the given name does not contain the wheights or if no name given
+    if not(name.endswith(".hdf5")):
+        files = [path_models + x for x in os.listdir(path_models) if x.startswith(name) and x.endswith(".hdf5")]
+        name = max(files , key = os.path.getctime).replace(path_models,'')
 
-    if name[:6] =='AE_v1_':
-        # the model is of the first iteration
-        i1 = name.find('_W_D') # check if this one has the wheights
-        if i1 >=0:
-            model_path  = path_models + name[:i1] + '.json'
-            weight_path = path_models + name
-        else: # this one contains no wheights, find latest wheights available
-            name = name.replace('.json','') # remove json if it was present
-            model_path  = path_models + name + '.json'
-
-            files = [path_models + x for x in os.listdir(path_models) if x.endswith(".hdf5") and x.startswith(name)]
-            weight_path = max(files , key = os.path.getctime)
-    elif name[:2].isdecimal():
-        # the model is of the old type:
-        name = name.replace('_w.hdf5','')
-        name = name.replace('.json','')
-        model_path  = path_models + name + ".json"
-        weight_path = path_models + name + "_w.hdf5"
-    else:
-        raise Exception(f"could not indentify a valid model, check if the folowing model exists: {name}")
+    i = name.upper().find("_W")
+    model_path  = path_models + name[:i] + '.json'
+    weight_path = path_models + name
 
     # load model and model weights
     with open(model_path, 'r') as json_file:
@@ -170,9 +151,8 @@ def ImageGenerators(base_dir, train_batch_size=32, val_batch_size=32, IMAGE_SIZE
      return train_gen, val_gen, test_gen_H, test_gen_D
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and False:
     import matplotlib.pyplot as plt
-    import numpy as np
     train_gen, val_gen, test_gen_H, test_gen_D = ImageGenerators(path_images)
     if False:
         model = AutoEncoder()
@@ -184,11 +164,10 @@ if __name__ == '__main__':
     #%% visualize:
     n = 10
 
-    images = test_gen_H.next().astype(np.float32)
+    images = test_gen_H.next()
 
     decoded_imgs =  model.predict(images)
 
-    print("hihi")
     plt.figure(figsize=(20, 4))
     for i in range(n):
         # display original
