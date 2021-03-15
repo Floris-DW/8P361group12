@@ -103,7 +103,7 @@ for i in range(n):
     ax.get_yaxis().set_visible(False)
 plt.show()
 
-#%% Registration error
+#%% Registration error healthy images
 
 # real_img = images[0] - np.mean(images[0])
 # recreated_img = decoded_imgs[0] - np.mean(decoded_imgs[0])
@@ -117,22 +117,44 @@ plt.show()
 # CC=(np.transpose(u).dot(v))/(((np.transpose(u).dot(u))**0.5)*((np.transpose(v).dot(v))**0.5))
 
 # print(np.mean(CC))
-mse_list = []
+mse_list_0 = []
 
 cycles = 3
-#loops over cycles x batch size images and calculates mean squared error
+#loops over cycles x batch_size class 0 images and calculates mean squared error
 for j in range(cycles):
     for i in range(images.shape[0]):
-        real_img = images[i]
-        recreated_img = decoded_imgs[i]
-
-        mse_list.append(MSE_rgb(real_img, recreated_img))
-        images = image_test.next()
+                
         images = np.clip(images, 0, 1)
         decoded_imgs =  np.clip(model.predict(images),0,1)
         decoded_imgs =  np.clip(decoded_imgs, 0, 1)
 
-print(mse_list)
+        real_img = images[i]
+        recreated_img = decoded_imgs[i]
+        images = image_test.next()
+        mse_list_0.append(MSE_rgb(real_img, recreated_img))
 
 
 
+#%%initiate unhealthy image generator
+_,imggen_class1 = get_pcam_generators(path_images, classes=['1'], class_mode=None)
+images_class1 = image_test.next()
+images_class1 = np.clip(images, 0, 1)
+#%% Registration error unhealthy images
+
+mse_list_1 = []
+for j in range(cycles):
+    for i in range(images_class1.shape[0]):
+                
+        images_class1 = np.clip(images, 0, 1)
+        decoded_imgs =  np.clip(model.predict(images_class1),0,1)
+        decoded_imgs =  np.clip(decoded_imgs, 0, 1)
+        real_img = images_class1[i]
+        recreated_img = decoded_imgs[i]
+        images = image_test.next()
+        
+        mse_list_1.append(MSE_rgb(real_img, recreated_img))
+
+
+#%%
+print("MSE healthy images:",sum(mse_list_0)/96)
+print('MSE unhealthy images', sum(mse_list_1)/96)
