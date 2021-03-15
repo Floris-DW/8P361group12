@@ -10,7 +10,6 @@ Created on Tue Mar  9 14:37:29 2021
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import tensorflow as tf
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -56,6 +55,20 @@ def get_pcam_generators(base_dir, train_batch_size=32, val_batch_size=32, classe
                                              class_mode=class_mode)
 
      return train_gen, val_gen
+#%% define mean squared error function for rgb images
+
+def MSE_rgb(im1,im2):
+    '''Input: two NxNx3 arrays
+    Output: mean squared error value
+    '''
+    err_array = [0,0,0]
+    for i in range(3):
+        err = np.sum((im1[:,:,i] - im2[:,:,i]) ** 2)
+        err = err / im1[:,:,i].shape[0] * im1[:,:,i].shape[1]
+        err_array[i] = err
+
+    mse = sum(err_array) / 3
+    return mse
 
 #%% load model and model weights
 with open(model_path+'.json', 'r') as json_file:
@@ -92,15 +105,34 @@ plt.show()
 
 #%% Registration error
 
-real_img = images[0] - np.mean(images[0])
-recreated_img = decoded_imgs[0] - np.mean(decoded_imgs[0])
+# real_img = images[0] - np.mean(images[0])
+# recreated_img = decoded_imgs[0] - np.mean(decoded_imgs[0])
 
-u = real_img.reshape((real_img.shape[0]*real_img.shape[1],3))
-v = recreated_img.reshape((recreated_img.shape[0]*recreated_img.shape[1],3))
+# u = real_img.reshape((real_img.shape[0]*real_img.shape[1],3))
+# v = recreated_img.reshape((recreated_img.shape[0]*recreated_img.shape[1],3))
 
-u = u - u.mean(keepdims=True)
-v = v - v.mean(keepdims=True)
+# u = u - u.mean(keepdims=True)
+# v = v - v.mean(keepdims=True)
     
-CC=(np.transpose(u).dot(v))/(((np.transpose(u).dot(u))**0.5)*((np.transpose(v).dot(v))**0.5))
+# CC=(np.transpose(u).dot(v))/(((np.transpose(u).dot(u))**0.5)*((np.transpose(v).dot(v))**0.5))
 
-print(np.mean(CC))
+# print(np.mean(CC))
+mse_list = []
+
+cycles = 3
+#loops over cycles x batch size images and calculates mean squared error
+for j in range(cycles):
+    for i in range(images.shape[0]):
+        real_img = images[i]
+        recreated_img = decoded_imgs[i]
+
+        mse_list.append(MSE_rgb(real_img, recreated_img))
+        images = image_test.next()
+        images = np.clip(images, 0, 1)
+        decoded_imgs =  np.clip(model.predict(images),0,1)
+        decoded_imgs =  np.clip(decoded_imgs, 0, 1)
+
+print(mse_list)
+
+
+
