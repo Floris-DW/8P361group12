@@ -144,8 +144,9 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
 
 
 def MSE(OG, NW):
-    """just the MeanSquaredError"""
+    """ just the MeanSquaredError """
     return np.square(OG - NW).mean()
+
 
 def score(model, gen, n = 16, loss=MSE,verbose=False): # 16*32 = 512
     """ make a list of predictions based on a given loss function """
@@ -159,6 +160,7 @@ def score(model, gen, n = 16, loss=MSE,verbose=False): # 16*32 = 512
     if verbose: print(f'\rbatch {n}/{n}')
     return l
 
+#%% TEST code blocks
 
 def TestPlot(Model,n=10,H=True):
     test_gen_H, test_gen_D = ImageGeneratorsTest(path_images,batch_size=n)
@@ -194,19 +196,16 @@ def TestScore(model):
     predictions = np.concatenate((Hl,Dl))
 
     from sklearn.metrics import roc_curve, auc
-
     fpr1, tpr1, thresholds = roc_curve(labels, predictions)
     auc = auc(fpr1, tpr1)
-
     print(auc)
-
     #plotting ROC from random classifier
     plt.figure(1)
     plt.plot([0, 1], [0, 1], 'k--')
     plt.plot(fpr1, tpr1)
     plt.legend(["random","model"])
 
-
+#%% the main function
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
