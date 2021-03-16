@@ -20,6 +20,9 @@ from tensorflow.keras.layers import Conv2D, MaxPool2D, UpSampling2D, Input
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 import time
+import numpy as np
+
+
 
 def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2),
                 activation='relu',padding='same', model_name=None):
@@ -140,6 +143,70 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
      return test_gen_H, test_gen_D
 
 
+def MSE(OG, NW):
+    """just the MeanSquaredError"""
+    return np.square(OG - NW).mean()
+
+def score(model, gen, n = 16, loss=MSE,verbose=False): # 16*32 = 512
+    """ make a list of predictions based on a given loss function """
+    bs = gen.batch_size
+    l = np.zeros(n*bs)
+    for i in range(n):
+        O = gen.next()
+        P = model.predict(gen,batch_size=bs) # give it the batch size to stop it from complaining
+        l[i*bs:(i+1)*bs] = list(map(loss, O,P))
+        if verbose: print(f'\rbatch {i}/{n}',end='')
+    if verbose: print(f'\rbatch {n}/{n}')
+    return l
+
+
+def TestPlot(Model,n=10,H=True):
+    test_gen_H, test_gen_D = ImageGeneratorsTest(path_images,batch_size=n)
+    images = test_gen_H.next() if H else test_gen_D.next()
+    decoded_imgs =  model.predict(images,batch_size=test_gen_H.batch_size)
+
+    plt.figure(figsize=(20, 4))
+    for i in range(n):
+        # display original
+        ax = plt.subplot(2, n, i + 1)
+        plt.imshow(images[i])
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+
+        # display reconstruction
+        ax = plt.subplot(2, n, i+1+n)
+        plt.imshow(decoded_imgs[i])
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+    plt.show()
+
+def TestScore(model):
+    test_gen_H, test_gen_D = ImageGeneratorsTest(path_images)
+    #generate predictions for a 50/50 sample set.
+    Hl = score(model, test_gen_H, verbose=True)
+    Dl = score(model, test_gen_D, verbose=True)
+    # the used loss function is NOT between 1 & 0 so normalize the data.
+    tmp = np.max([Hl,Dl])
+    Hl /= tmp
+    Dl /= tmp
+
+    labels = np.concatenate((np.zeros(Hl.size),np.ones(Dl.size)))
+    predictions = np.concatenate((Hl,Dl))
+
+    from sklearn.metrics import roc_curve, auc
+
+    fpr1, tpr1, thresholds = roc_curve(labels, predictions)
+    auc = auc(fpr1, tpr1)
+
+    print(auc)
+
+    #plotting ROC from random classifier
+    plt.figure(1)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.plot(fpr1, tpr1)
+    plt.legend(["random","model"])
+
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
@@ -147,37 +214,16 @@ if __name__ == '__main__':
     path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
     path_models = './models/'
 
-    if True:
+    if False:
         model = AutoEncoder()
-        num_epochs = 1
+        num_epochs = 4
         train_gen, val_gen = ImageGeneratorsTrain(path_images)
         history = TrainModel(model, train_gen, val_gen, num_epochs)
     else:
         model = LoadModel()
-    model.summary()
+    #model.summary()
 
-    # visualize:
-    test_gen_H, test_gen_D = ImageGeneratorsTest(path_images)
+    TestScore(model)
 
-    n = 10
+    #TestPlot(Model)
 
-    images = test_gen_H.next()
-
-    decoded_imgs =  model.predict(images)
-
-    plt.figure(figsize=(20, 4))
-    for i in range(n):
-        # display original
-        ax = plt.subplot(2, n, i + 1)
-        plt.imshow(images[i])
-        #plt.gray()
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-
-        # display reconstruction
-        ax = plt.subplot(2, n, i+1+n)
-        plt.imshow(decoded_imgs[i])
-        #plt.gray()
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-    plt.show()
