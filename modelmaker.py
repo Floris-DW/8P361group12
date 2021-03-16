@@ -20,9 +20,6 @@ from tensorflow.keras.layers import Conv2D, MaxPool2D, UpSampling2D, Input
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 import time
-# Preparations
-path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
-path_models = './models/'
 
 def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2),
                 activation='relu',padding='same', model_name=None):
@@ -35,7 +32,7 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
 
     # decoder
     for i in filters[::-1]: #loop over the filter in reverse
-        x = Conv2D(filters[2], kernel_size, activation=activation, padding=padding)(x)
+        x = Conv2D(i, kernel_size, activation=activation, padding=padding)(x)
         x = UpSampling2D(pool_size)(x)
     x = Conv2D(input_shape[2], kernel_size, activation="sigmoid", padding=padding)(x) # output layer
 
@@ -46,7 +43,7 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
     return Model(input_layer, x, name=model_name)
 
 
-def TrainModel(model, train, validation, num_epochs, batch_size=32,
+def TrainModel(model, train, validation, num_epochs,
                loss='MeanSquaredError', optimizer='adam',
                save_model=True, verbose=1, save_dir='./models/'):
 
@@ -146,9 +143,13 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    if False:
+    # Preparations
+    path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
+    path_models = './models/'
+
+    if True:
         model = AutoEncoder()
-        num_epochs = 10
+        num_epochs = 1
         train_gen, val_gen = ImageGeneratorsTrain(path_images)
         history = TrainModel(model, train_gen, val_gen, num_epochs)
     else:
