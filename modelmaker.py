@@ -21,8 +21,18 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
-
+#%% just a timer utility
+def timer(func):
+    def inner(*args, **kwargs):
+        t1 = time.time()
+        f = func(*args, **kwargs)
+        t2 = time.time()
+        print (f'Runtime of "{func.__name__}" took {t2-t1:.2f} seconds')
+        return f
+    return inner
+#%%
 
 def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2),
                 activation='relu',padding='same', model_name=None):
@@ -147,7 +157,7 @@ def MSE(OG, NW):
     """ just the MeanSquaredError """
     return np.square(OG - NW).mean()
 
-
+@timer
 def score(model, gen, n = 16, loss=MSE,verbose=False): # 16*32 = 512
     """ make a list of predictions based on a given loss function """
     bs = gen.batch_size
@@ -185,8 +195,8 @@ def TestPlot(Model,n=10,H=True):
 def TestScore(model):
     test_gen_H, test_gen_D = ImageGeneratorsTest(path_images)
     #generate predictions for a 50/50 sample set.
-    Hl = score(model, test_gen_H, verbose=True)
-    Dl = score(model, test_gen_D, verbose=True)
+    Hl = score(model, test_gen_H, verbose=True,n=5)
+    Dl = score(model, test_gen_D, verbose=True,n=5)
     # the used loss function is NOT between 1 & 0 so normalize the data.
     tmp = np.max([Hl,Dl])
     Hl /= tmp
@@ -200,15 +210,28 @@ def TestScore(model):
     auc = auc(fpr1, tpr1)
     print(auc)
     #plotting ROC from random classifier
-    plt.figure(1)
+    plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
     plt.plot(fpr1, tpr1)
     plt.legend(["random","model"])
+    #%%
+    plt.figure()
+    import scipy.stats
+    color = {0:['green','springgreen','healthy'], 1:['red','tomato','diseased']}
+    for T,data in enumerate([Hl,Dl]):
+        bw =  None #0.1 # How smooth/rough the line can be, lower is rougher. None = default
+        kde = scipy.stats.gaussian_kde(data,bw_method=bw)
+        # plot (normalized) histogram of the data
+        plt.hist(data, 50, density=1, facecolor=color[T][0], alpha=0.5);
+        # plot density estimates
+        t_range = np.linspace(0,1,200)
+        plt.plot(t_range,kde(t_range),lw=2,
+                 label=f'{color[T][0]} = {color[T][2]}',color=color[T][1])
+        plt.xlim(0,1)
+        plt.legend(loc='best')
 
 #%% the main function
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
     # Preparations
     path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
     path_models = './models/'
