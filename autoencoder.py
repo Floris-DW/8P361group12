@@ -1,13 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Mar  5 20:23:46 2021
-
-@author: 20183193
-"""
-"""
-refrance source:
-    https://github.com/seasonyc/densenet
-"""
+""" refrance source: https://github.com/seasonyc/densenet """
 version = 'AE_v1' # naming sceme for models, prevent namingconflicts. AE = AutoEncoder
 
 # imports
@@ -23,8 +14,9 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 #%% just a timer utility
-def timer(func):
+def _timer(func):
     def inner(*args, **kwargs):
         t1 = time.time()
         f = func(*args, **kwargs)
@@ -32,7 +24,8 @@ def timer(func):
         print (f'Runtime of "{func.__name__}" took {t2-t1:.2f} seconds')
         return f
     return inner
-#%%
+
+#%% all importable functions
 
 def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2),
                 activation='relu',padding='same', model_name=None):
@@ -52,19 +45,16 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
     # assign the model an default name if None was given
     r = lambda x: str(x).replace(', ','.')[1:-1] # remove the (,),[,] and replace , with .
     model_name = model_name or f"{version}_F{ r(filters) }_K{ r(kernel_size) }_P{ r(pool_size) }"
-
     return Model(input_layer, x, name=model_name)
 
-
+@_timer
 def TrainModel(model, train, validation, num_epochs,
                loss='MeanSquaredError', optimizer='adam',
                save_model=True, verbose=1, save_dir='./models/'):
-
     if save_model:
         model_json = model.to_json() # serialize model to JSON
         with open(save_dir + model.name+'.json', 'w') as json_file:
             json_file.write(model_json)
-
         # prepare to save wheights
         date = time.strftime("%d-%m-%Y_%H-%M-%S")
         callbacks = ModelCheckpoint(save_dir + model.name+f'_W_E{num_epochs}_D{date}.hdf5', monitor='val_loss', verbose=verbose, save_best_only=True, mode='min')
@@ -73,11 +63,10 @@ def TrainModel(model, train, validation, num_epochs,
 
     model.compile(optimizer,loss)
     model_history = model.fit(train, epochs=num_epochs, batch_size=32, verbose=verbose,
-                                validation_data=validation,
-                                callbacks=callbacks)
+                                validation_data=validation, callbacks=callbacks)
     return model_history
 
-
+@_timer
 def LoadModel(name='', path_models='./models/'):
     """
     load diffrent types of models.
@@ -112,15 +101,10 @@ def ImageGeneratorsTrain(base_dir, train_batch_size=32, val_batch_size=32, IMAGE
      """
      # dataset parameters
      train_path = base_dir + 'train+val/train'
-
-     RESCALING_FACTOR = 1./255
-
      # we split the training set into training and validation.
-     datagen_train = ImageDataGenerator(rescale=RESCALING_FACTOR, validation_split=split)
-
+     datagen_train = ImageDataGenerator(rescale=1./255, validation_split=split)
      # using the method from here might be better:
      # https://towardsdatascience.com/addressing-the-difference-between-keras-validation-split-and-sklearn-s-train-test-split-a3fb803b733
-
      train_gen = datagen_train.flow_from_directory(train_path, batch_size=train_batch_size, target_size=(IMAGE_SIZE, IMAGE_SIZE),
                                              subset='training',   classes='0', class_mode='input')
 
@@ -137,47 +121,21 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
      """
      # dataset parameters
      valid_path = base_dir + 'train+val/valid'
-
-     RESCALING_FACTOR = 1./255
-
      #The test set is made from the validaion set
-     datagen_test = ImageDataGenerator(rescale=RESCALING_FACTOR)
-
+     datagen_test = ImageDataGenerator(rescale=1./255)
      # the test generators
      test_gen_H = datagen_test.flow_from_directory(valid_path, batch_size=batch_size, target_size=(IMAGE_SIZE, IMAGE_SIZE),
                                              classes='0', class_mode=None)
-
      test_gen_D = datagen_test.flow_from_directory(valid_path, batch_size=batch_size, target_size=(IMAGE_SIZE, IMAGE_SIZE),
                                              classes='1', class_mode=None)
-
      return test_gen_H, test_gen_D
 
 
-def MSE(OG, NW):
-    """ just the MeanSquaredError """
-    return np.square(OG - NW).mean()
+def plot(Model,gen):
+    images = gen.next(); n=10
+    decoded_imgs =  model.predict(images,batch_size=gen.batch_size)
 
-@timer
-def score(model, gen, n = 16, loss=MSE,verbose=False): # 16*32 = 512
-    """ make a list of predictions based on a given loss function """
-    bs = gen.batch_size
-    l = np.zeros(n*bs)
-    for i in range(n):
-        O = gen.next()
-        P = model.predict(gen,batch_size=bs) # give it the batch size to stop it from complaining
-        l[i*bs:(i+1)*bs] = list(map(loss, O,P))
-        if verbose: print(f'\rbatch {i}/{n}',end='')
-    if verbose: print(f'\rbatch {n}/{n}')
-    return l
-
-#%% TEST code blocks
-
-def TestPlot(Model,n=10,H=True):
-    test_gen_H, test_gen_D = ImageGeneratorsTest(path_images,batch_size=n)
-    images = test_gen_H.next() if H else test_gen_D.next()
-    decoded_imgs =  model.predict(images,batch_size=test_gen_H.batch_size)
-
-    plt.figure(figsize=(20, 4))
+    plt.figure(figsize=(2*n, 4))
     for i in range(n):
         # display original
         ax = plt.subplot(2, n, i + 1)
@@ -192,11 +150,25 @@ def TestPlot(Model,n=10,H=True):
         ax.get_yaxis().set_visible(False)
     plt.show()
 
-def TestScore(model):
+
+@_timer
+def score(model, gen, loss, n = 16, verbose=False): # 16*32 = 512
+    """ make a list of predictions based on a given loss function """
+    bs = gen.batch_size
+    l = np.zeros(n*bs)
+    for i in range(n):
+        O = gen.next()
+        P = model.predict(gen,batch_size=bs) # give it the batch size to stop it from complaining
+        l[i*bs:(i+1)*bs] = list(map(loss, O,P))
+        if verbose: print(f'\rbatch {i}/{n}',end='')
+    if verbose: print(f'\rbatch {n}/{n}')
+    return l
+
+def _TestScore(model,loss):
     test_gen_H, test_gen_D = ImageGeneratorsTest(path_images)
     #generate predictions for a 50/50 sample set.
-    Hl = score(model, test_gen_H, verbose=True,n=5)
-    Dl = score(model, test_gen_D, verbose=True,n=5)
+    Hl = score(model, test_gen_H, loss, verbose=True,n=5)
+    Dl = score(model, test_gen_D, loss, verbose=True,n=5)
     # the used loss function is NOT between 1 & 0 so normalize the data.
     tmp = np.max([Hl,Dl])
     Hl /= tmp
@@ -230,7 +202,7 @@ def TestScore(model):
         plt.xlim(0,1)
         plt.legend(loc='best')
 
-#%% the main function
+
 if __name__ == '__main__':
     # Preparations
     path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
@@ -245,7 +217,9 @@ if __name__ == '__main__':
         model = LoadModel()
     #model.summary()
 
-    TestScore(model)
+    import loss
+    _TestScore(model, loss.MSE)
 
-    #TestPlot(Model)
+    #test_gen_H, test_gen_D = ImageGeneratorsTest(path_images)
+    #plot(Model,test_gen_H)
 
