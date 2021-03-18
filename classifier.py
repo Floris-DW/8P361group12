@@ -16,6 +16,8 @@ import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import model_from_json
+import modelmaker
+import losses
 
 #%% define paths
 path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
@@ -71,10 +73,7 @@ def MSE_rgb(im1,im2):
     return mse
 
 #%% load model and model weights
-with open(model_path+'.json', 'r') as json_file:
-    loaded_model_json = json_file.read()
-model = model_from_json(loaded_model_json)
-model.load_weights(model_path+'_w.hdf5')
+model = modelmaker.LoadModel()
 
 #%% plot test:
 n = 10
@@ -115,10 +114,13 @@ plt.show()
 # v = v - v.mean(keepdims=True)
     
 # CC=(np.transpose(u).dot(v))/(((np.transpose(u).dot(u))**0.5)*((np.transpose(v).dot(v))**0.5))
+#print(np.mean(CC))
+cc = losses.NCC_rgb(images[0], images[0])
+print(cc)
 
-# print(np.mean(CC))
+
+#%%
 mse_list_0 = []
-
 cycles = 3
 #loops over cycles x batch_size class 0 images and calculates mean squared error
 for j in range(cycles):
@@ -156,5 +158,5 @@ for j in range(cycles):
 
 
 #%%
-print("MSE healthy images:",sum(mse_list_0)/96)
-print('MSE unhealthy images', sum(mse_list_1)/96)
+print("MSE healthy images:",np.mean(mse_list_0))
+print('MSE unhealthy images', np.mean(mse_list_1))
