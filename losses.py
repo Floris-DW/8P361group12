@@ -27,7 +27,7 @@ def NCC_rgb(im1,im2):
 
     for i in range(im1.shape[2]):
         nim1 = im1[:,:,i] - im1[:,:,i].mean()
-        nim2 = im2[:,:,i] - im1[:,:,i].mean()
+        nim2 = im2[:,:,i] - im2[:,:,i].mean()
         cc_array[i] = scipy.signal.correlate2d(nim1,nim2, mode = "valid")
 
     cc = np.mean(cc_array)
