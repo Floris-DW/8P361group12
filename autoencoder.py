@@ -131,7 +131,7 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
      return test_gen_H, test_gen_D
 
 
-def plot(Model,gen):
+def plot(model,gen):
     images = gen.next(); n=10
     decoded_imgs =  model.predict(images,batch_size=gen.batch_size)
 
