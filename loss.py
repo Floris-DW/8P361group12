@@ -2,6 +2,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 from tensorflow.keras.applications.vgg19 import VGG19
+import tensorflow as tf
 import numpy as np
 import scipy.signal
 
@@ -35,6 +36,8 @@ def NCC_rgb(im1,im2):
     return cc
 
 
+vgg19_model = VGG19(include_top=False, weights="imagenet", input_shape=(96,96,3))
+vgg19_model.trainable = False
 def perceptual_loss(input_images, reconstructed_images):
     """
     Calculates the relative perceptual L1 loss between an original image and its reconstructed image.
@@ -43,51 +46,40 @@ def perceptual_loss(input_images, reconstructed_images):
     Expected input: numpy array with shape: (number of images (batch size),X,Y,Z)
     Output: Relative perceptual L1 loss (float)
     """
-    batch_size = input_images.shape[0]
-    image_shape = input_images.shape[1:] #(96,96,3)
-
-    # retrieve vgg19 model
-    vgg19_model = VGG19(include_top=False, weights="imagenet", input_shape=image_shape)
-    vgg19_model.trainable = False
-
     # pre-calculated mean and std of the filter responses of the vgg19 model
-    vgg19_mean = np.array([0.485, 0.456, 0.406])
-    vgg19_std = np.array([0.229, 0.224, 0.225])
+    vgg19_mean = tf.reshape(tf.constant([0.485, 0.456, 0.406]),(1,3,1,1))
+    vgg19_std = tf.reshape(tf.constant([0.229, 0.224, 0.225]),(1,3,1,1))
 
-    features_1 = vgg19_model.predict(input_images)
-    features_2 = vgg19_model.predict(reconstructed_images)
+    features_1 = vgg19_model(input_images)
+    features_2 = vgg19_model(reconstructed_images)
 
-    features_shape = features_1.shape[1:] #(3,3,512)
+    f1_n = (features_1-vgg19_mean)/vgg19_std
+    f2_n = (features_2-vgg19_mean)/vgg19_std
 
-    # initialize losses matrix
-    losses = np.empty((batch_size,features_shape[0],features_shape[1]))
+    num = tf.math.sqrt(tf.math.reduce_sum(tf.math.square(f1_n - f2_n),axis=[1,2,3]))
+    den = tf.math.sqrt(tf.math.reduce_sum(tf.math.square(f2_n),axis=[1,2,3]))
 
-    for i in range(batch_size):
-        f1=features_1[i]
-        f2=features_2[i]
+    losses = num/den
 
-        # initialize normalized feature matrices
-        f1_n = np.empty(features_shape)
-        f2_n = np.empty(features_shape)
-
-        # normalization
-        for j in range(features_shape[0]):
-            f1_n[j] = (f1[j] - vgg19_mean[j])/vgg19_std[j]
-            f2_n[j] = (f2[j] - vgg19_mean[j])/vgg19_std[j]
-
-        # calculate perceptual loss of current image
-        numerator = np.sqrt(((f1_n - f2_n)**2).sum(-1))
-        denominator = np.sqrt((f1_n**2).sum(-1))
-        curr_loss = numerator/denominator
-        losses[i] = curr_loss
-    # calculate end-result of the perceptual losses (this is the L1 loss (I think))
-    return losses.sum(2).sum(1).sum(0)/losses.size
+    return losses
 
 # put your functionality tests in here:
 if __name__ == '__main__':
-    import autoencoder
-    #%% loss function test
-    test_gen_H, test_gen_D = autoencoder.ImageGeneratorsTest("../../Images/")
-    images = test_gen_H.next()
-    print(NCC_rgb(images[0],images[0]))
+    test_something = False
+    if test_something:
+        import autoencoder
+        #%% loss function test
+        test_gen_H, test_gen_D = autoencoder.ImageGeneratorsTest("../../Images/")
+        images = test_gen_H.next()
+        print(NCC_rgb(images[0],images[0]))
+
+    test_perceptual_loss = False
+    if test_perceptual_loss:
+        path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
+        path_models = './models/'
+        from autoencoder import ImageGeneratorsTrain, TrainModel, LoadModel
+        model = LoadModel()
+        num_epochs = 1
+        train_gen, val_gen = ImageGeneratorsTrain(path_images)
+        history = TrainModel(model, train_gen, val_gen, num_epochs,loss=perceptual_loss, save_model=False)
 
