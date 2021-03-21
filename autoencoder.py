@@ -39,10 +39,10 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
     # dense layer bottlenek
     if dense_bn:
         s = x.shape[3] # save shape
-        x = Dense(dense_bn, activation='relu')(x) # apply the bottlenek
+        x = Dense(dense_bn, activation=activation)(x) # apply the bottlenek
 
         # restore the size
-        x = Dense(s, activation='relu')(x)
+        x = Dense(s, activation=activation)(x)
 
     # decoder
     for i in filters[::-1]: #loop over the filter in reverse
@@ -52,7 +52,7 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
 
     # assign the model an default name if None was given
     r = lambda x: str(x).replace(', ','.')[1:-1] # remove the (,),[,] and replace , with .
-    model_name = model_name or f"{version}_F{ r(filters) }_K{ r(kernel_size) }_P{ r(pool_size) }_Dbn{dense_bn}"
+    model_name = model_name or f"{version}_F{ r(filters) }_K{ r(kernel_size) }_P{ r(pool_size) }_Dbn-{dense_bn}"
     return Model(input_layer, x, name=model_name)
 
 
@@ -66,7 +66,9 @@ def TrainModel(model, train, validation, num_epochs,
             json_file.write(model_json)
         # prepare to save wheights
         date = time.strftime("%d-%m-%Y_%H-%M-%S")
-        callbacks = ModelCheckpoint(save_dir + model.name+f'_W_E{num_epochs}_D{date}.hdf5', monitor='val_loss', verbose=verbose, save_best_only=True, mode='min')
+        lossname = loss if type(loss) == str else loss.__name__
+        callbacks = ModelCheckpoint(save_dir + model.name+f'_W_E{num_epochs}_L-{lossname}_D{date}.hdf5',
+                                    monitor='val_loss', verbose=verbose, save_best_only=True, mode='min')
     else:
         callbacks=None
 
