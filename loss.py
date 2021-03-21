@@ -6,17 +6,6 @@ import tensorflow as tf
 import numpy as np
 import scipy.signal
 
-def MSE_rgb(im1,im2):
-    '''Input: two NxNx3 arrays
-    Output: mean squared error value averaged for every color channel
-    '''
-    err_array = [0,0,0]
-    for i in range(3):
-        err = np.sum((im1[:,:,i] - im2[:,:,i]) ** 2)
-        err = err / (im1[:,:,i].shape[0] * im1[:,:,i].shape[1])
-        err_array[i] = err
-    return np.mean(err_array)
-
 
 def MSE(OG, NW):
     """ just the MeanSquaredError """

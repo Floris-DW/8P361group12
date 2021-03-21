@@ -1,5 +1,5 @@
 """ refrance source: https://github.com/seasonyc/densenet """
-version = 'AE_v1' # naming sceme for models, prevent namingconflicts. AE = AutoEncoder
+version = 'AE_v2' # naming sceme for models, prevent namingconflicts. AE = AutoEncoder
 
 # imports
 import os
@@ -7,7 +7,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model, model_from_json
-from tensorflow.keras.layers import Conv2D, MaxPool2D, UpSampling2D, Input
+from tensorflow.keras.layers import Conv2D, MaxPool2D, UpSampling2D, Input, Dense
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 import time
@@ -27,7 +27,7 @@ def _timer(func):
 
 #%% all importable functions
 
-def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2),
+def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2), dense_bn=None,
                 activation='relu',padding='same', model_name=None):
     #encoder
     input_layer = Input(shape=input_shape)
@@ -35,6 +35,14 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
     for i in filters:
         x = Conv2D(i, kernel_size, activation=activation, padding=padding)(x)
         x = MaxPool2D(pool_size=pool_size, padding=padding)(x)
+
+    # dense layer bottlenek
+    if dense_bn:
+        s = x.shape[3] # save shape
+        x = Dense(dense_bn, activation='relu')(x) # apply the bottlenek
+
+        # restore the size
+        x = Dense(s, activation='relu')(x)
 
     # decoder
     for i in filters[::-1]: #loop over the filter in reverse
@@ -44,8 +52,9 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
 
     # assign the model an default name if None was given
     r = lambda x: str(x).replace(', ','.')[1:-1] # remove the (,),[,] and replace , with .
-    model_name = model_name or f"{version}_F{ r(filters) }_K{ r(kernel_size) }_P{ r(pool_size) }"
+    model_name = model_name or f"{version}_F{ r(filters) }_K{ r(kernel_size) }_P{ r(pool_size) }_Dbn{dense_bn}"
     return Model(input_layer, x, name=model_name)
+
 
 @_timer
 def TrainModel(model, train, validation, num_epochs,
