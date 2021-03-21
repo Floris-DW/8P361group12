@@ -27,7 +27,7 @@ path_models = './models/'
 
 # settings for tarining / loading models
 # comment away any unused variables:
-Train_settings = {
+AE_settings = {
 #    'input_shape' : (96,96,3),
 #    'filters'     : [64, 32, 16],
 #    'kernel_size' : (3,3),
@@ -36,8 +36,13 @@ Train_settings = {
 #    'padding'     : 'same',
 #    'model_name'  : None,
     }
+Train_settings = {
+    'num_epochs' : 10,
+#    'loss'       : 'MeanSquaredError',
+#    'optimizer'  : 'adam',
+    }
 # end
-num_epochs = 4
+
 
 load_model_name = ''
 
@@ -49,9 +54,9 @@ analysis_loss = loss.MSE # pick some form of loss from loss.py
 #%% end settings
 if __name__ == '__main__':
     if train_model:
-        model = AE.AutoEncoder(**Train_settings)
+        model = AE.AutoEncoder(**AE_settings)
         train_gen, val_gen = AE.ImageGeneratorsTrain(path_images)
-        history = AE.TrainModel(model, train_gen, val_gen, num_epochs)
+        history = AE.TrainModel(model, train_gen, val_gen, **Train_settings)
     else:
         model = AE.LoadModel(load_model_name)
     if show_summary: model.summary()
