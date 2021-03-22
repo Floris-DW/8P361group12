@@ -19,8 +19,8 @@ show_summary = True
 plot_healthy = True
 plot_diseased = True
 
-plot_ROC = True
-plot_probability_density = True
+plot_ROC = False
+plot_probability_density = False
 
 #%% configuration settings
 path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py

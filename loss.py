@@ -19,9 +19,10 @@ def NCC_rgb(input_images, reconstructed_images):
     for i in range(32):
         cc_rgb = tf.zeros((1,1,1,1))
         for j in range(3):
-            
-            kernel = tf.reshape(reconstructed_images[i,:,:,j], [96,96,1,1])
-            matrix = tf.reshape(input_images[i,:,:,j], [1,96,96,1])
+            recon_image = tf.subtract(reconstructed_images[i,:,:,j], tf.math.reduce_mean(reconstructed_images[i,:,:,j]))
+            input_image = tf.subtract(input_images[i,:,:,j] , tf.math.reduce_mean(input_images[i,:,:,j]))
+            kernel = tf.reshape(recon_image, [96,96,1,1])
+            matrix = tf.reshape(input_image, [1,96,96,1])
             cc_c = tf.nn.conv2d(matrix,kernel ,1, padding = "VALID")
             cc_rgb = tf.concat([cc_rgb, cc_c],0)
             
