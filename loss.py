@@ -26,6 +26,7 @@ def NCC_rgb(input_images, reconstructed_images):
             cc_rgb = tf.concat([cc_rgb, cc_c],0)
             
         cc = tf.math.reduce_sum(cc_rgb) / (3*96*96) 
+        cc =  1 - cc
         cc = tf.reshape(cc,[1])
         final_cc = tf.concat([final_cc, cc],0)
     return final_cc
