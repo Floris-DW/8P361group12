@@ -10,9 +10,10 @@ import matplotlib.pyplot as plt
 
 import autoencoder as AE
 import loss
+
 #%% settings
 # Toggels
-train_model = False
+train_model = True
 
 show_summary = True
 plot_healthy = True
@@ -29,7 +30,7 @@ path_models = './models/'
 # comment away any unused variables:
 AE_settings = {
 #    'input_shape' : (96,96,3),
-#    'filters'     : [64, 32, 16],
+    'filters'     : [128, 64, 32, 16],
 #    'kernel_size' : (3,3),
 #    'pool_size'   : (2,2),
 #    'activation'  : 'relu',
@@ -38,7 +39,7 @@ AE_settings = {
     }
 Train_settings = {
     'num_epochs' : 10,
-#    'loss'       : 'MeanSquaredError',
+    'loss'       : loss.NCC_rgb,
 #    'optimizer'  : 'adam',
     }
 # end

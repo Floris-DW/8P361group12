@@ -12,18 +12,23 @@ def MSE(OG, NW):
     return np.square(OG - NW).mean()
 
 
-def NCC_rgb(im1,im2):
-    '''Input: two NxNx3 arrays
-    Output: mean of NCC values for all three color channels
-    '''
-    cc_array= [1,1,1]
-    for i in range(im1.shape[2]):
-        nim1 = im1[:,:,i] - im1[:,:,i].mean()
-        nim2 = im2[:,:,i] - im2[:,:,i].mean()
-        cc_array[i] = scipy.signal.correlate2d(nim1,nim2, mode = "valid")/(nim1.shape[0]*nim1.shape[1])
-    cc = np.mean(cc_array)
-    return cc
 
+def NCC_rgb(input_images, reconstructed_images):
+    final_cc = []
+
+    for i in range(32):
+        cc_rgb = tf.zeros((1,1,1,1))
+        for j in range(3):
+            
+            kernel = tf.reshape(reconstructed_images[i,:,:,j], [96,96,1,1])
+            matrix = tf.reshape(input_images[i,:,:,j], [1,96,96,1])
+            cc_c = tf.nn.conv2d(matrix,kernel ,1, padding = "VALID")
+            cc_rgb = tf.concat([cc_rgb, cc_c],0)
+            
+        cc = tf.math.reduce_sum(cc_rgb) / (3*96*96) 
+        cc = tf.reshape(cc,[1])
+        final_cc = tf.concat([final_cc, cc],0)
+    return final_cc
 
 vgg19_model = VGG19(include_top=False, weights="imagenet", input_shape=(96,96,3))
 vgg19_model.trainable = False
@@ -54,13 +59,13 @@ def perceptual_loss(input_images, reconstructed_images):
 
 # put your functionality tests in here:
 if __name__ == '__main__':
-    test_something = False
+    test_something = True
     if test_something:
         import autoencoder
         #%% loss function test
         test_gen_H, test_gen_D = autoencoder.ImageGeneratorsTest("../../Images/")
         images = test_gen_H.next()
-        print(NCC_rgb(images[0],images[0]))
+        print(NCC_rgb(images,images))
 
     test_perceptual_loss = False
     if test_perceptual_loss:
