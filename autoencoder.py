@@ -6,13 +6,18 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Model, model_from_json
+from tensorflow.keras.models import Model, model_from_json, load_model
 from tensorflow.keras.layers import Conv2D, MaxPool2D, UpSampling2D, Input, Dense
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+
+"""
+great resource:
+    https://www.pyimagesearch.com/2019/09/23/keras-starting-stopping-and-resuming-training/
+"""
 
 
 #%% just a timer utility
