@@ -61,9 +61,10 @@ def TrainModel(model, train, validation, num_epochs,
                loss='MeanSquaredError', optimizer='adam',
                save_model=True, verbose=1, save_dir='./models/'):
     if save_model:
-        model_json = model.to_json() # serialize model to JSON
-        with open(save_dir + model.name+'.json', 'w') as json_file:
-            json_file.write(model_json)
+        if not os.path.exists(save_dir + model.name+'.json'): # don't overwrite existing models of the same type.
+            model_json = model.to_json() # serialize model to JSON
+            with open(save_dir + model.name+'.json', 'w') as json_file:
+                json_file.write(model_json)
         # prepare to save wheights
         date = time.strftime("%d-%m-%Y_%H-%M-%S")
         lossname = loss if type(loss) == str else loss.__name__
