@@ -15,7 +15,7 @@ import loss
 # Toggels
 train_model = True
 
-show_summary = True
+show_summary = False
 plot_healthy = True
 plot_diseased = True
 
@@ -38,7 +38,7 @@ AE_settings = {
 #    'model_name'  : None,
     }
 Train_settings = {
-    'num_epochs' : 10,
+    'num_epochs' : 4,
     'loss'       : loss.NCC_rgb,
 #    'optimizer'  : 'adam',
     }
