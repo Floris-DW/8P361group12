@@ -10,6 +10,18 @@ import matplotlib.pyplot as plt
 
 import autoencoder as AE
 import loss
+
+import time
+#%% note
+"""
+Modellen met methode 2 trainen (als het niet te lang duurt)
+loss = "MeanSquaredError":
+[16,32,64,128]dense(36*16)A
+[16,32,64,128]dense(36*8)A
+
+loss = loss.NCC_rgb:
+[16,32,64,128]dense(36*4)A
+"""
 #%% settings
 # Toggels
 train_model = False
@@ -29,16 +41,17 @@ path_models = './models/'
 # comment away any unused variables:
 AE_settings = {
 #    'input_shape' : (96,96,3),
-#    'filters'     : [64, 32, 16],
+    'filters'     : [16,32,64,128], #[64, 32, 16],
 #    'kernel_size' : (3,3),
 #    'pool_size'   : (2,2),
 #    'activation'  : 'relu',
 #    'padding'     : 'same',
 #    'model_name'  : None,
+    'dense_bn'    : 16,
     }
 Train_settings = {
     'num_epochs' : 10,
-#    'loss'       : 'MeanSquaredError',
+    'loss'       : 'MeanSquaredError',
 #    'optimizer'  : 'adam',
     }
 # end
@@ -53,6 +66,7 @@ analysis_loss = loss.MSE # pick some form of loss from loss.py
 
 #%% end settings
 if __name__ == '__main__':
+    print(f'[info] starting. starting time: {time.ctime()}')
     if train_model:
         model = AE.AutoEncoder(**AE_settings)
         train_gen, val_gen = AE.ImageGeneratorsTrain(path_images)
@@ -103,3 +117,4 @@ if __name__ == '__main__':
                          label=f'{color[T][0]} = {color[T][2]}',color=color[T][1])
                 plt.xlim(0,1)
                 plt.legend(loc='best')
+    print(f'[info] finished. finished time: {time.ctime()}')

@@ -9,7 +9,7 @@ import scipy.signal
 
 def MSE(OG, NW):
     """ just the MeanSquaredError """
-    return np.square(OG - NW).mean()
+    return tf.math.square(tf.math.reduce_sum(OG-NW,axis=[1,2,3]))
 
 
 def NCC_rgb(im1,im2):

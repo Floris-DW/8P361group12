@@ -173,12 +173,13 @@ def score(model, gen, loss, n = 16, verbose=False): # 16*32 = 512
     """ make a list of predictions based on a given loss function """
     bs = gen.batch_size
     l = np.zeros(n*bs)
+    if verbose: print(f'batch 0/{n}',end='')
     for i in range(n):
         O = gen.next()
-        P = model.predict(gen,batch_size=bs) # give it the batch size to stop it from complaining
-        l[i*bs:(i+1)*bs] = list(map(loss, O,P))
-        if verbose: print(f'\rbatch {i}/{n}',end='')
-    if verbose: print(f'\rbatch {n}/{n}')
+        P = model.predict(O,batch_size=bs) # give it the batch size to stop it from complaining
+        l[i*bs:(i+1)*bs] = loss(O,P).numpy()
+        if verbose: print(f'\r\rbatch {i+1}/{n}',end='')
+    if verbose: print()
     return l
 
 def _TestScore(model,loss):
