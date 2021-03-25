@@ -18,9 +18,6 @@ Modellen met methode 2 trainen (als het niet te lang duurt)
 loss = "MeanSquaredError":
 [16,32,64,128]dense(36*16)A
 [16,32,64,128]dense(36*8)A
-
-loss = loss.NCC_rgb:
-[16,32,64,128]dense(36*4)A
 """
 #%% settings
 # Toggels
@@ -47,7 +44,7 @@ AE_settings = {
 #    'activation'  : 'relu',
 #    'padding'     : 'same',
 #    'model_name'  : None,
-    'dense_bn'    : 16,
+    'dense_bn'    : 8,
     }
 Train_settings = {
     'num_epochs' : 10,
@@ -56,12 +53,11 @@ Train_settings = {
     }
 # end
 
-
-load_model_name = ''
+load_model_name = 'AE_v2_F128.64.32.32_K3.3_P2.2_Dbn-None_W_E10_L-MeanSquaredError_D23-03-2021_17-43-11.hdf5'
 
 # settings for ROC & probabiliy density curves
-n_image_sets = 16 # for 16*32 = 512 images per group
-analysis_loss = loss.MSE # pick some form of loss from loss.py
+n_image_sets = 32 # for 16*32 = 512 images per group
+analysis_loss = loss.perceptual_loss # pick some form of loss from loss.py
 
 
 #%% end settings
@@ -86,9 +82,11 @@ if __name__ == '__main__':
         Dl = AE.score(model, test_gen_D, analysis_loss, verbose=True, n=n_image_sets)
 
         # the used loss function is NOT between 1 & 0 so normalize the data.
-        tmp = np.max([Hl,Dl])
-        Hl /= tmp
-        Dl /= tmp
+        # tmp = np.max([Hl,Dl])
+        # Hl /= tmp
+        # Dl /= tmp
+        over1 = np.sum(np.concatenate((Hl,Dl))>1)
+        print(f'[info] the numer of values above 1: {over1:.0f}/{2*32*n_image_sets:.0f} or {over1/(2*32*n_image_sets):.2%}')
         # end normalization
 
         if plot_ROC:
@@ -96,7 +94,7 @@ if __name__ == '__main__':
             predictions = np.concatenate((Hl,Dl))
 
             fpr1, tpr1, thresholds = roc_curve(labels, predictions)
-            auc = auc(fpr1, tpr1); print(auc)
+            AUC = auc(fpr1, tpr1); print(AUC)
             #plotting ROC from random classifier
             plt.figure()
             plt.plot([0, 1], [0, 1], 'k--')
