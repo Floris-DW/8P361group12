@@ -6,19 +6,13 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Model, model_from_json, load_model
+from tensorflow.keras.models import Model, model_from_json
 from tensorflow.keras.layers import Conv2D, MaxPool2D, UpSampling2D, Input, Dense
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-
-"""
-great resource:
-    https://www.pyimagesearch.com/2019/09/23/keras-starting-stopping-and-resuming-training/
-"""
-
 
 #%% just a timer utility
 def _timer(func):
@@ -34,6 +28,14 @@ def _timer(func):
 
 def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), pool_size=(2,2), dense_bn=None,
                 activation='relu',padding='same', model_name=None):
+    """
+    Returns an autoencoder model based on the inputs.
+
+    Filters should be provided from input to smallest bottleneck.
+    Note that convolutial layers are alternated with maxpooling layers.
+
+    If dense_bn is set to an integer, a bottleneck layer of this size is used.
+    """
     #encoder
     input_layer = Input(shape=input_shape)
     x = input_layer
@@ -65,6 +67,11 @@ def AutoEncoder(input_shape=(96,96,3), filters=[64, 32, 16], kernel_size=(3,3), 
 def TrainModel(model, train, validation, num_epochs,
                loss='MeanSquaredError', optimizer='adam',
                save_model=True, verbose=1, save_dir='./models/'):
+    """
+    Trains a given model with the provided train and validation generators.
+    Loss can be "MeanSquaredError", or a loss function from loss.py
+    """
+
     if save_model:
         if not os.path.exists(save_dir + model.name+'.json'): # don't overwrite existing models of the same type.
             model_json = model.to_json() # serialize model to JSON
@@ -92,9 +99,19 @@ def LoadModel(name='', path_models='./models/'):
         - if no weights are given, picks latest available for the given name.
 
     **please use the weights (.hdf5) to refer to the model**
+
+    Note that the model must exist in the path given by path_models or be provided in name.
+    this function does not search further folders.
     """
+    # check if a full path was given
+    if name[:2].upper() == "C:":
+        name = name.replace('\\', '/')
+        path_models = name[:name.rfind('/') +1]
+        name = name[name.rfind('/')+1:]
+
     # if the given name does not contain the wheights or if no name given
     if not(name.endswith(".hdf5")):
+        if name.endswith(".json"): name = name.replace('.json','')
         files = [path_models + x for x in os.listdir(path_models) if x.startswith(name) and x.endswith(".hdf5")]
         name = max(files , key = os.path.getctime).replace(path_models,'')
 
@@ -114,7 +131,7 @@ def ImageGeneratorsTrain(base_dir, train_batch_size=32, val_batch_size=32, IMAGE
      """
      create twe genarators:
      train and validation.
-     the train and validaion set are build from the split training set.
+     the train and validaion set are build from the spliting the training set.
      """
      # dataset parameters
      train_path = base_dir + 'train+val/train'
@@ -149,6 +166,10 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
 
 
 def plot(model,gen):
+    """
+    plot input images above and corresponding predicions below
+    for 10 images form the provided generator
+    """
     images = gen.next(); n=10
     decoded_imgs =  model.predict(images,batch_size=gen.batch_size)
 
