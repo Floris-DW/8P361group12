@@ -8,13 +8,15 @@ import scipy.signal
 
 
 def MSE(OG, NW):
-    """ just the MeanSquaredError """
+    """ Just the MeanSquaredError """
     return tf.math.square(tf.math.reduce_sum(OG-NW,axis=[1,2,3]))
 
 
 def NCC_rgb(im1,im2):
     '''Input: two NxNx3 arrays
     Output: mean of NCC values for all three color channels
+
+    Does not properly support usage in training
     '''
     cc_array= [1,1,1]
     for i in range(im1.shape[2]):
@@ -54,8 +56,8 @@ def perceptual_loss(input_images, reconstructed_images):
 
 # put your functionality tests in here:
 if __name__ == '__main__':
-    test_something = False
-    if test_something:
+    test_NCC_rgb = False
+    if test_NCC_rgb:
         import autoencoder
         #%% loss function test
         test_gen_H, test_gen_D = autoencoder.ImageGeneratorsTest("../../Images/")

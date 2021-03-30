@@ -12,15 +12,8 @@ import autoencoder as AE
 import loss
 
 import time
-#%% note
-"""
-Modellen met methode 2 trainen (als het niet te lang duurt)
-loss = "MeanSquaredError":
-[16,32,64,128]dense(36*16)A
-[16,32,64,128]dense(36*8)A
-"""
-#%% settings
-# Toggels
+#%% Toggels settings
+# if set to false, load_model_name is used to pick the model.
 train_model = False
 
 show_summary = True
@@ -31,29 +24,30 @@ plot_ROC = True
 plot_probability_density = True
 
 #%% configuration settings
-path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/autoencoder.py
+path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/main.py
 path_models = './models/'
 
-# settings for tarining / loading models
+# settings for training / loading models
 # comment away any unused variables:
-AE_settings = {
+AE_settings = { # the settings used to generate the model
 #    'input_shape' : (96,96,3),
-    'filters'     : [16,32,64,128], #[64, 32, 16],
+#    'filters'     : [16,32,64,128], # [128,64, 32, 16],
 #    'kernel_size' : (3,3),
 #    'pool_size'   : (2,2),
 #    'activation'  : 'relu',
 #    'padding'     : 'same',
 #    'model_name'  : None,
-    'dense_bn'    : 8,
+#    'dense_bn'    : 8,
     }
 Train_settings = {
     'num_epochs' : 10,
     'loss'       : 'MeanSquaredError',
 #    'optimizer'  : 'adam',
     }
-# end
 
-load_model_name = 'AE_v2_F128.64.32.32_K3.3_P2.2_Dbn-None_W_E10_L-MeanSquaredError_D23-03-2021_17-43-11.hdf5'
+
+load_model_name = ''
+# if empty, load the oldest model pressent in "path_models". supports full paths (C:/)
 
 # settings for ROC & probabiliy density curves
 n_image_sets = 32 # for 16*32 = 512 images per group
@@ -81,12 +75,8 @@ if __name__ == '__main__':
         Hl = AE.score(model, test_gen_H, analysis_loss, verbose=True, n=n_image_sets)
         Dl = AE.score(model, test_gen_D, analysis_loss, verbose=True, n=n_image_sets)
 
-        # the used loss function is NOT between 1 & 0 so normalize the data.
-        # tmp = np.max([Hl,Dl])
-        # Hl /= tmp
-        # Dl /= tmp
-        over1 = np.sum(np.concatenate((Hl,Dl))>1)
-        print(f'[info] the numer of values above 1: {over1:.0f}/{2*32*n_image_sets:.0f} or {over1/(2*32*n_image_sets):.2%}')
+        #over1 = np.sum(np.concatenate((Hl,Dl))>1)
+        #print(f'[info] the numer of values above 1: {over1:.0f}/{2*32*n_image_sets:.0f} or {over1/(2*32*n_image_sets):.2%}')
         # end normalization
 
         if plot_ROC:
@@ -113,6 +103,6 @@ if __name__ == '__main__':
                 t_range = np.linspace(0,1,200)
                 plt.plot(t_range,kde(t_range),lw=2,
                          label=f'{color[T][0]} = {color[T][2]}',color=color[T][1])
-                plt.xlim(0,1)
+                plt.xlim(left=0)
                 plt.legend(loc='best')
     print(f'[info] finished. finished time: {time.ctime()}')
