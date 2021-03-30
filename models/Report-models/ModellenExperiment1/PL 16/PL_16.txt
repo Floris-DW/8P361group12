@@ -1,0 +1,91 @@
+runfile('C:/Users/20183193/OneDrive - TU Eindhoven/TUe/BMT/Year 3/Q3/8P361 - (group) Project Imaging - BIA/Github/8P361group12/main.py', wdir='C:/Users/20183193/OneDrive - TU Eindhoven/TUe/BMT/Year 3/Q3/8P361 - (group) Project Imaging - BIA/Github/8P361group12')
+Reloaded modules: autoencoder, loss
+Found 50400 images belonging to 1 classes.
+Found 21600 images belonging to 1 classes.
+Epoch 1/10
+1575/1575 [==============================] - 1115s 700ms/step - loss: 0.3604 - val_loss: 0.2886
+
+Epoch 00001: val_loss improved from inf to 0.28863, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 2/10
+1575/1575 [==============================] - 1095s 695ms/step - loss: 0.2784 - val_loss: 0.2645
+
+Epoch 00002: val_loss improved from 0.28863 to 0.26450, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 3/10
+1575/1575 [==============================] - 1097s 696ms/step - loss: 0.2632 - val_loss: 0.2568
+
+Epoch 00003: val_loss improved from 0.26450 to 0.25684, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 4/10
+1575/1575 [==============================] - 1097s 696ms/step - loss: 0.2527 - val_loss: 0.2467
+
+Epoch 00004: val_loss improved from 0.25684 to 0.24671, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 5/10
+1575/1575 [==============================] - 1095s 695ms/step - loss: 0.2445 - val_loss: 0.2421
+
+Epoch 00005: val_loss improved from 0.24671 to 0.24207, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 6/10
+1575/1575 [==============================] - 1094s 695ms/step - loss: 0.2378 - val_loss: 0.2397
+
+Epoch 00006: val_loss improved from 0.24207 to 0.23968, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 7/10
+1575/1575 [==============================] - 1096s 696ms/step - loss: 0.2326 - val_loss: 0.2322
+
+Epoch 00007: val_loss improved from 0.23968 to 0.23215, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 8/10
+1575/1575 [==============================] - 1095s 696ms/step - loss: 0.2276 - val_loss: 0.2290
+
+Epoch 00008: val_loss improved from 0.23215 to 0.22900, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 9/10
+1575/1575 [==============================] - 1095s 695ms/step - loss: 0.2235 - val_loss: 0.2218
+
+Epoch 00009: val_loss improved from 0.22900 to 0.22182, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Epoch 10/10
+1575/1575 [==============================] - 1095s 696ms/step - loss: 0.2194 - val_loss: 0.2192
+
+Epoch 00010: val_loss improved from 0.22182 to 0.21921, saving model to ./models\AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None_W_E10_L-perceptual_loss_D21-03-2021_19-46-44.hdf5
+Runtime of "TrainModel" took 10975.13 seconds
+Model: "AE_v2_F128.64.32.16_K3.3_P2.2_Dbn-None"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_4 (InputLayer)         [(None, 96, 96, 3)]       0         
+_________________________________________________________________
+conv2d (Conv2D)              (None, 96, 96, 128)       3584      
+_________________________________________________________________
+max_pooling2d (MaxPooling2D) (None, 48, 48, 128)       0         
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 48, 48, 64)        73792     
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 24, 24, 64)        0         
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 24, 24, 32)        18464     
+_________________________________________________________________
+max_pooling2d_2 (MaxPooling2 (None, 12, 12, 32)        0         
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 12, 12, 16)        4624      
+_________________________________________________________________
+max_pooling2d_3 (MaxPooling2 (None, 6, 6, 16)          0         
+_________________________________________________________________
+conv2d_4 (Conv2D)            (None, 6, 6, 16)          2320      
+_________________________________________________________________
+up_sampling2d (UpSampling2D) (None, 12, 12, 16)        0         
+_________________________________________________________________
+conv2d_5 (Conv2D)            (None, 12, 12, 32)        4640      
+_________________________________________________________________
+up_sampling2d_1 (UpSampling2 (None, 24, 24, 32)        0         
+_________________________________________________________________
+conv2d_6 (Conv2D)            (None, 24, 24, 64)        18496     
+_________________________________________________________________
+up_sampling2d_2 (UpSampling2 (None, 48, 48, 64)        0         
+_________________________________________________________________
+conv2d_7 (Conv2D)            (None, 48, 48, 128)       73856     
+_________________________________________________________________
+up_sampling2d_3 (UpSampling2 (None, 96, 96, 128)       0         
+_________________________________________________________________
+conv2d_8 (Conv2D)            (None, 96, 96, 3)         3459      
+=================================================================
+Total params: 203,235
+Trainable params: 203,235
+Non-trainable params: 0
+_________________________________________________________________
+Found 8000 images belonging to 1 classes.
+Found 8000 images belonging to 1 classes.
