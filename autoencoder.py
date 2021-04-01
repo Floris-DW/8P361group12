@@ -134,7 +134,7 @@ def ImageGeneratorsTrain(base_dir, train_batch_size=32, val_batch_size=32, IMAGE
      the train and validaion set are build from the spliting the training set.
      """
      # dataset parameters
-     train_path = base_dir + 'train+val/train'
+     train_path = base_dir + '/train+val/train/'
      # we split the training set into training and validation.
      datagen_train = ImageDataGenerator(rescale=1./255, validation_split=split)
      # using the method from here might be better:
@@ -154,7 +154,7 @@ def ImageGeneratorsTest(base_dir, batch_size=32, IMAGE_SIZE=96):
      the test sets are the original validaion set.
      """
      # dataset parameters
-     valid_path = base_dir + 'train+val/valid'
+     valid_path = base_dir + '/train+val/valid/'
      #The test set is made from the validaion set
      datagen_test = ImageDataGenerator(rescale=1./255)
      # the test generators

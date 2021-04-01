@@ -24,8 +24,8 @@ plot_ROC = True
 plot_probability_density = True
 
 #%% configuration settings
-path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github/main.py
-path_models = './models/'
+path_images = r'../../Images/' # navigate to ~/source/Images from ~/source/Github/main.py
+path_models = r'./models/'
 
 # settings for training / loading models
 # comment away any unused variables:
@@ -43,6 +43,8 @@ Train_settings = {
     'num_epochs' : 10,
     'loss'       : 'MeanSquaredError',
 #    'optimizer'  : 'adam',
+#    'save_model' : True,
+#    'save_dir'   : './models/',
     }
 
 
@@ -62,7 +64,7 @@ if __name__ == '__main__':
         train_gen, val_gen = AE.ImageGeneratorsTrain(path_images)
         history = AE.TrainModel(model, train_gen, val_gen, **Train_settings)
     else:
-        model = AE.LoadModel(load_model_name)
+        model = AE.LoadModel(load_model_name, path_models=path_models)
     if show_summary: model.summary()
 
     test_gen_H, test_gen_D = AE.ImageGeneratorsTest(path_images)

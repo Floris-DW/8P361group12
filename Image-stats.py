@@ -15,7 +15,8 @@ path_images = '../../Images/' # navigate to ~/source/Images from ~/source/Github
 
 paths = {'Train':         '/'.join((path_images,'train+val/train','0')),
          'Valdation':     '/'.join((path_images,'train+val/train','0')),
-         'Test Healthy':  '/'.join((path_images,'train+val/valid','0')),         'Test Diseased': '/'.join((path_images,'train+val/valid','1'))}
+         'Test Healthy':  '/'.join((path_images,'train+val/valid','0')),
+         'Test Diseased': '/'.join((path_images,'train+val/valid','1'))}
 train_split = 1 - 0.3
 
 print('[info] starting')
