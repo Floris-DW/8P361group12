@@ -3,12 +3,12 @@ The folder structure is as follows:
 Report-models
  |- README.txt
  |- ModellenExperiment1
-     | - [model discription]
+     | - [model description]
            |- XXX.json
            |- XXX.hdf5
            |- python_terminal_output [.txt / .docx] (optional)
  |- ModellenExperiment2
-     | - [model discription]
+     | - [model description]
            |- XXX.json
            |- XXX.hdf5
            |- python_terminal_output [.txt / .docx] (optional)
